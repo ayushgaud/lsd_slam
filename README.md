@@ -1,4 +1,10 @@
+
 # LSD-SLAM: Large-Scale Direct Monocular SLAM
+### Change log
+
+* Fixed cmake issues (findEigen.cmake) in catkin branch
+* Added support for giving odometry prior for keyframes just before pose graph optimization **[Under Development]**
+
 
 LSD-SLAM is a novel approach to real-time monocular SLAM. It is fully direct (i.e. does not use keypoints / features) and creates large-scale, 
 semi-dense maps in real-time on a laptop. For more information see

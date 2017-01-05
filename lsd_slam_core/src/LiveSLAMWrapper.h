@@ -29,6 +29,10 @@
 #include "IOWrapper/TimestampedObject.h"
 #include "util/SophusUtil.h"
 
+//for ros pose subscriber
+#include <ros/ros.h>
+#include "nav_msgs/Odometry.h"
+
 namespace cv {
 	class Mat;
 }
@@ -71,7 +75,7 @@ public:
 	/** Writes the given time and pose to the outFile. */
 	void logCameraPose(const SE3& camToWorld, double time);
 	
-	
+	void poseCb(const nav_msgs::Odometry::ConstPtr& msg);
 	inline SlamSystem* getSlamSystem() {return monoOdometry;}
 	
 private:
@@ -95,6 +99,12 @@ private:
 
 
 	int imageSeqNumber;
+	
+	//For pose input
+	Sim3 pose;
+	ros::Subscriber pose_subs;
+	std::string pose_topic;
+	ros::NodeHandle nh_;
 
 };
 

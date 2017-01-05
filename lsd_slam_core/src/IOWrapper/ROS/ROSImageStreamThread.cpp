@@ -37,6 +37,8 @@ namespace lsd_slam
 
 using namespace cv;
 
+
+
 ROSImageStreamThread::ROSImageStreamThread()
 {
 	// subscribe

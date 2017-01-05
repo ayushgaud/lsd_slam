@@ -104,4 +104,14 @@ Sim3 FramePoseStruct::getCamToWorld(int recursionDepth)
 	return camToWorld = trackingParent->getCamToWorld(recursionDepth+1) * thisToParent_raw;
 }
 
+Sim3 FramePoseStruct::getPose()
+{
+	return camToWorld;
+}
+
+void FramePoseStruct::setPose(Sim3 cam_pose)
+{
+	camToWorld = cam_pose;
+}
+
 }

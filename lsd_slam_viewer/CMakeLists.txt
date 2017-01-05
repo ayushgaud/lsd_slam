@@ -12,7 +12,7 @@ set(CMAKE_BUILD_TYPE Release)
 ADD_SUBDIRECTORY(${PROJECT_SOURCE_DIR}/thirdparty/Sophus)
 
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${PROJECT_SOURCE_DIR}/cmake)
-
+find_package(cmake_modules REQUIRED)
 find_package(catkin REQUIRED COMPONENTS
   cv_bridge
   dynamic_reconfigure

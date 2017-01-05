@@ -73,7 +73,7 @@ public:
 	SlamSystem& operator=(const SlamSystem&) = delete;
 	~SlamSystem();
 
-	void randomInit(uchar* image, double timeStamp, int id);
+	void randomInit(uchar* image, double timeStamp, int id, Sim3 pose = Sim3());
 	void gtDepthInit(uchar* image, float* depth, double timeStamp, int id);
 
 	
@@ -82,7 +82,7 @@ public:
 	// first frame will return Identity = camToWord.
 	// returns camToWord transformation of the tracked frame.
 	// frameID needs to be monotonically increasing.
-	void trackFrame(uchar* image, unsigned int frameID, bool blockUntilMapped, double timestamp);
+	void trackFrame(uchar* image, unsigned int frameID, bool blockUntilMapped, double timestamp, Sim3 pose = Sim3());
 
 	// finalizes the system, i.e. blocks and does all remaining loop-closures etc.
 	void finalize();
@@ -124,7 +124,7 @@ private:
 	// ============= EXCLUSIVELY TRACKING THREAD (+ init) ===============
 	TrackingReference* trackingReference; // tracking reference for current keyframe. only used by tracking.
 	SE3Tracker* tracker;
-
+	Sim3 init_pose;
 
 
 	// ============= EXCLUSIVELY MAPPING THREAD (+ init) =============
