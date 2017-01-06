@@ -73,7 +73,7 @@ public:
 	SlamSystem& operator=(const SlamSystem&) = delete;
 	~SlamSystem();
 
-	void randomInit(uchar* image, double timeStamp, int id, Sim3 pose = Sim3());
+	void randomInit(uchar* image, double timeStamp, int id);
 	void gtDepthInit(uchar* image, float* depth, double timeStamp, int id);
 
 	
@@ -125,7 +125,6 @@ private:
 	TrackingReference* trackingReference; // tracking reference for current keyframe. only used by tracking.
 	SE3Tracker* tracker;
 	Sim3 init_pose;
-
 
 	// ============= EXCLUSIVELY MAPPING THREAD (+ init) =============
 	DepthMap* map;

@@ -854,20 +854,19 @@ void SlamSystem::gtDepthInit(uchar* image, float* depth, double timeStamp, int i
 }
 
 
-void SlamSystem::randomInit(uchar* image, double timeStamp, int id, Sim3 pose)
+void SlamSystem::randomInit(uchar* image, double timeStamp, int id)
 {
 	printf("Doing Random initialization!\n");
 
 	if(!doMapping)
 		printf("WARNING: mapping is disabled, but we just initialized... THIS WILL NOT WORK! Set doMapping to true.\n");
 
-	init_pose = pose;
+	
 	currentKeyFrameMutex.lock();
 
 	currentKeyFrame.reset(new Frame(id, width, height, K, timeStamp, image));
 	map->initializeRandomly(currentKeyFrame.get());
 	keyFrameGraph->addFrame(currentKeyFrame.get());
-
 	currentKeyFrameMutex.unlock();
 
 	if(doSlam)
@@ -917,9 +916,9 @@ void SlamSystem::trackFrame(uchar* image, unsigned int frameID, bool blockUntilM
 	// DO TRACKING & Show tracking result.
 	if(enablePrintDebugInfo && printThreadingInfo)
 		printf("TRACKING %d on %d\n", trackingNewFrame->id(), trackingReferencePose->frameID);
-	Sim3 temp = pose.inverse() * init_pose;
+	//Sim3 temp = pose;
 	std::cout<<"T_1: " << trackingReferencePose->getPose().translation() << std::endl;
-	std::cout<<"T_2: " << temp.translation() << std::endl;
+	std::cout<<"T_2: " << pose.translation() << std::endl;
 
 	poseConsistencyMutex.lock_shared();
 	SE3 frameToReference_initialEstimate = se3FromSim3(

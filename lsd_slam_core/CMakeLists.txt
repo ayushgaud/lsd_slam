@@ -16,6 +16,7 @@ find_package(catkin REQUIRED COMPONENTS
   image_transport
   roscpp
   rosbag
+  tf
 )
 
 find_package(Eigen REQUIRED)

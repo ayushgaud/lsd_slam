@@ -32,6 +32,7 @@
 //for ros pose subscriber
 #include <ros/ros.h>
 #include "nav_msgs/Odometry.h"
+#include <tf/transform_listener.h>
 
 namespace cv {
 	class Mat;
@@ -104,8 +105,16 @@ private:
 	Sim3 pose;
 	ros::Subscriber pose_subs;
 	std::string pose_topic;
+	std::string use_tf;
+	std::string odom_frame;
+	std::string camera_frame;
 	ros::NodeHandle nh_;
-
+	tf::TransformListener listener;
+	tf::StampedTransform transform;
+	tf::Pose odom;
+  	tf::Pose camera;
+  	tf::Pose transformedPose;
+  	bool flag = false;
 };
 
 }

@@ -42,6 +42,7 @@ LiveSLAMWrapper::LiveSLAMWrapper(InputImageStream* imageStream, Output3DWrapper*
 	this->outputWrapper = outputWrapper;
 	imageStream->getBuffer()->setReceiver(this);
 	pose_topic = nh_.resolveName("pose_topic");
+	use_tf = nh_.resolveName("use_tf");
 	pose_subs = nh_.subscribe(pose_topic, 1, &LiveSLAMWrapper::poseCb, this);
 	fx = imageStream->fx();
 	fy = imageStream->fy();
@@ -69,6 +70,28 @@ LiveSLAMWrapper::LiveSLAMWrapper(InputImageStream* imageStream, Output3DWrapper*
 
 	imageSeqNumber = 0;
 
+	//get transform
+	
+	if(use_tf.compare("/true")==0 && flag)
+	{	
+
+		odom_frame = nh_.resolveName("odom_frame");
+		camera_frame = nh_.resolveName("camera_frame");
+
+		try 
+		{
+    		listener.waitForTransform(camera_frame, odom_frame, ros::Time(0), ros::Duration(10.0) );
+    		listener.lookupTransform(camera_frame, odom_frame, ros::Time(0), transform);
+    		camera.setOrigin(transform.getOrigin());
+  			camera.setRotation(transform.getRotation());
+  			flag = 0;
+    		std::cout << "Got Transform!"<< std::endl;
+		} 
+		catch (tf::TransformException ex) 
+		{
+    		ROS_ERROR("%s",ex.what());
+		}
+	}
 
 }
 
@@ -89,17 +112,37 @@ void LiveSLAMWrapper::poseCb(const nav_msgs::Odometry::ConstPtr& msg)
 { 
   double scale = 1;
   tf::Quaternion q( msg->pose.pose.orientation.x, msg->pose.pose.orientation.y, msg->pose.pose.orientation.z, msg->pose.pose.orientation.w);
-  tf::Matrix3x3 m(q);
+  tf::Vector3 t(msg->pose.pose.position.x, msg->pose.pose.position.y, msg->pose.pose.position.z);
+  odom.setOrigin(t);
+  odom.setRotation(q);
+  try
+  {
+	transformedPose = camera * odom;
+	std::cout << "reached: " << transformedPose.getOrigin() << std::endl;
+  }
+  catch(tf::TransformException ex)
+  {
+  	std::cout << "error " << ex.what() << std::endl;
+  }
+  //tf to opencv mat
+ 
+  tf::Matrix3x3 m(transformedPose.getRotation());
   double roll, pitch, yaw;
   m.getRPY(roll, pitch, yaw);
-  
-  //frame conversions and transformations
-  //ZYX -> -Y-XZ
-  cv::Mat rotationMatrix(3,3,CV_64F);
-  double x = -pitch;
-  double y = -yaw;
-  double z = roll;
 
+  tf::Vector3 trans(transformedPose.getOrigin());
+  
+  std::cout << "X: "<<trans[0] << "Y: "<< trans[1] << "Z: "<< trans[2] << std::endl;
+  cv::Mat translationMatrix(3,1,CV_64F);
+  translationMatrix.at<double>(0) = trans[0];
+  translationMatrix.at<double>(1) = trans[1];
+  translationMatrix.at<double>(2) = trans[2];
+
+  cv::Mat rotationMatrix(3,3,CV_64F);
+  double x = roll;
+  double y = pitch;
+  double z = yaw;
+  
   // Assuming the angles are in radians.
   double ch = cos(z);
   double sh = sin(z);
@@ -130,10 +173,6 @@ void LiveSLAMWrapper::poseCb(const nav_msgs::Odometry::ConstPtr& msg)
   rotationMatrix.at<double>(2,1) = m21;
   rotationMatrix.at<double>(2,2) = m22;
 
-  cv::Mat translationMatrix(3,1,CV_64F);
-  translationMatrix.at<double>(0) = -msg->pose.pose.position.y;
-  translationMatrix.at<double>(1) = -msg->pose.pose.position.z;
-  translationMatrix.at<double>(2) = msg->pose.pose.position.x;
   pose = sim3FromSE3(SE3CV2Sophus(rotationMatrix, translationMatrix), scale);
 }
 
